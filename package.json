@@ -1,0 +1,31 @@
+{
+  "name": "quizpoll",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/bundle.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production",
+    "watch": "webpack --watch",
+    "start": "node ./dist/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BattalovAbbas/QuizPoll.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BattalovAbbas/QuizPoll/issues"
+  },
+  "homepage": "https://github.com/BattalovAbbas/QuizPoll#readme",
+  "dependencies": {
+    "dotenv-webpack": "1.7.0",
+    "node-telegram-bot-api": "0.50.0",
+    "webpack": "4.44.2",
+    "webpack-cli": "3.3.12"
+  },
+  "engines": {
+    "node": "10.16.0"
+  }
+}
