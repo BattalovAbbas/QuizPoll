@@ -61,14 +61,14 @@ function requestQuizes() {
       console.log("Error: " + err.message);
     });
   }).then(data => {
-    const root = HTMLParser.parse(data);
-    const dates = root.querySelectorAll('.schedule-column .h3.h3-mb10');
-    const times = root.querySelectorAll('.schedule-column .schedule-info .techtext');
-    const names = root.querySelectorAll('.schedule-column .h2.h2-game-card');
-    const places = root.querySelectorAll('.schedule-column .schedule-block-info-bar');
-    return dates.map((date, index) => {
+    const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
+    return games.map(game => {
+      const date = game.querySelector('.h3.h3-mb10');
+      const times = game.querySelectorAll('.schedule-info .techtext');
+      const names = game.querySelectorAll('.h2.h2-game-card');
+      const place = game.querySelector('.schedule-block-info-bar');
       const uuid = uuidv4();
-      cache[uuid] = `${ date.innerText }(${ times[index * 3 + 2].innerText }).\n\r${ names[index * 2].innerText.replace('SARATOV', '') }${ names[index * 2 + 1].innerText }.\n\r${ places[index].childNodes[0].innerText }`;
+      cache[uuid] = `${ date.innerText }(${ (times[2] || times[0]).innerText }).\n\r${ names[0].innerText.replace('SARATOV', '') }${ names[1].innerText }.\n\r${ place ? place.childNodes[0].innerText : '' }`;
       return uuid;
     })
   })
