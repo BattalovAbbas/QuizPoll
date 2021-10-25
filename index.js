@@ -38,6 +38,11 @@ bot.onText(/\/poll/, (message) => {
   });
 });
 
+bot.onText(/\/create/, (message) => {
+  const chatId = message.chat.id;
+  bot.sendPoll(chatId, message.text.replace('/create', '').trim(), [ 'Да, иду \u{1F4AF}%', 'Нет, не смогу \u{1F614}', 'Думаю \u{1F914} \u{23F3}', 'Играю за другую команду \u{1F6B6}', 'Со мной +1 \u{1F46F}' ], { is_anonymous: false });
+});
+
 bot.on('callback_query', (message) => {
   if (message.data.includes('_select_')) {
     const [ chatId, , uuid ] = message.data.split('_');
@@ -64,11 +69,11 @@ function requestQuizes() {
     const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
     return games.map(game => {
       const date = game.querySelector('.h3.h3-mb10');
-      const times = game.querySelectorAll('.schedule-info .techtext');
+      const times = game.querySelectorAll('.schedule-info').filter(info => info.querySelector('.schedule-icon'));
       const names = game.querySelectorAll('.h2.h2-game-card');
       const place = game.querySelector('.schedule-block-info-bar');
       const uuid = uuidv4();
-      cache[uuid] = `${ date.innerText }(${ (times[2] || times[0]).innerText }).\n\r${ names[0].innerText.replace('SARATOV', '') }${ names[1].innerText }.\n\r${ place ? place.childNodes[0].innerText : '' }`;
+      cache[uuid] = `${ date.innerText.trim() }(${ times[1].innerText.trim() }).\n\r${ names[0].innerText.replace('SARATOV', '').trim() } ${ names[1].innerText.trim() }.\n\r${ place ? place.childNodes[0].innerText.trim() : '' }`;
       return uuid;
     })
   })
