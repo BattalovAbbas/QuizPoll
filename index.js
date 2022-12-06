@@ -9,7 +9,7 @@ const cache = {};
 
 const telegramToken = process.env.TELEGRAM_TOKEN;
 let bot;
-if (process.env.NODE_ENV === 'production2') {
+if (process.env.NODE_ENV === 'production') {
   const port = process.env.PORT || 443;
   const host = process.env.HOST || '0.0.0.0';
   bot = new TelegramBot(telegramToken, { webHook: { port, host } });
