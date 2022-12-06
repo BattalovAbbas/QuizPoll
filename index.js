@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === 'production') {
   const port = process.env.PORT || 443;
   const host = process.env.HOST || '0.0.0.0';
   bot = new TelegramBot(telegramToken, { webHook: { port, host } });
-  bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':443' + '/bot' + telegramToken);
+  bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':' + port + '/bot' + telegramToken);
 } else {
   bot = new TelegramBot(telegramToken, { polling: true });
 }
