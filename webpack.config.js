@@ -8,7 +8,7 @@ module.exports = {
   entry: './index.js',
   devtool: "source-map",
   output: {
-    filename: 'bundle.js',
+    filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
