@@ -4,19 +4,19 @@ const TelegramBot = require('node-telegram-bot-api');
 const https = require('https');
 const HTMLParser = require('node-html-parser');
 const { v4: uuidv4 } = require('uuid');
-const telegramToken = process.env.TELEGRAM_TOKEN;
 
 const cache = {};
 
 let bot;
-function telegramBot() {
+async function telegramBot() {
   if (bot) {
     return bot;
   }
+  const telegramToken = process.env.TELEGRAM_TOKEN;
   if (process.env.NODE_ENV === 'production') {
     const port = process.env.PORT || 443;
-    const host = process.env.HOST || '0.0.0.0';
-    bot = new TelegramBot(telegramToken, { webHook: { port, host } });
+    const url = process.env.CUSTOM_ENV_VARIABLE || '0.0.0.0';
+    bot = new TelegramBot(telegramToken, { webHook: { url, port } });
     bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':' + port + '/bot' + telegramToken);
   } else {
     bot = new TelegramBot(telegramToken, { polling: true });
@@ -60,7 +60,6 @@ function telegramBot() {
       }
     }
   });
-
 }
 
 function requestQuizes(userId) {
@@ -92,8 +91,13 @@ function requestQuizes(userId) {
   })
 }
 
-module.exports = (req, res) => {
-  telegramBot();
-  res.statusCode = 200;
-  res.json({ message: 'It works' });
+module.exports = async (req, res) => {
+  try {
+    await telegramBot();
+  }
+  catch (error) {
+    console.error('Error sending message');
+    console.log(error.toString());
+  }
+  response.send('OK');
 }
