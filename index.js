@@ -8,19 +8,19 @@ const { v4: uuidv4 } = require('uuid');
 const cache = {};
 
 let bot;
-const telegramToken = process.env.TELEGRAM_TOKEN || '1220613465:AAGplFC8Ug7kT_PVRMWjaF4T9A5rLFuTimU';
+const telegramToken = process.env.TELEGRAM_TOKEN;
 if (process.env.NODE_ENV === 'production') {
   const port = process.env.PORT || 443;
   const url = process.env.CUSTOM_ENV_VARIABLE || '0.0.0.0';
   bot = new TelegramBot(telegramToken, { webHook: { port, url } });
-  bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':' + port + '/bot' + telegramToken);
+  bot.setWebHook(url + ':' + port + '/bot' + telegramToken);
 } else {
   bot = new TelegramBot(telegramToken, { polling: true });
 }
 
 bot.on('polling_error', (err) =>
   console.log(err)
-);  
+);
 
 bot.on('webhook_error', (error) => {
   console.log(error.code);
@@ -29,7 +29,6 @@ bot.on('webhook_error', (error) => {
 bot.onText(/\/poll/, (message) => {
   const chatId = message.chat.id;
   const userId = message.from.id;
-  bot.sendMessage(userId, `Создание`);
   requestQuizes(userId).then(uuids => {
     bot.sendMessage(userId, `Создать опрос для:`, {
       reply_markup: {
@@ -59,21 +58,18 @@ bot.on('callback_query', (message) => {
 
 function requestQuizes(userId) {
   return new Promise((resolve, reject) => {
-    bot.sendMessage(userId, `запрос`);
     https.get(`https://saratov.quiz-please.ru/schedule`, response => {
-      bot.sendMessage(userId, `ответ`);
       let data = '';
       response.on('data', chunk => {
         data += chunk
       });
       response.on('end', () => data === '‌Symbol not supported' ? reject(data) : resolve(data));
     }).on("error", (err) => {
-      bot.sendMessage(userId, err.message);
+      bot.sendMessage(userId, 'Попробуйте еще');
       console.log("Error: " + err.message);
     });
   }).then(data => {
     const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
-    bot.sendMessage(userId, `парсинг`);
     return games.map(game => {
       const date = game.querySelector('.h3.h3-mb10');
       const times = game.querySelectorAll('.schedule-info').filter(info => info.querySelector('.schedule-icon'));
