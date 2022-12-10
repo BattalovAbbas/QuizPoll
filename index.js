@@ -8,59 +8,54 @@ const { v4: uuidv4 } = require('uuid');
 const cache = {};
 
 let bot;
-async function telegramBot() {
-  if (bot) {
-    return bot;
-  }
-  const telegramToken = process.env.TELEGRAM_TOKEN;
-  if (process.env.NODE_ENV === 'production') {
-    const port = process.env.PORT || 443;
-    const url = process.env.CUSTOM_ENV_VARIABLE || '0.0.0.0';
-    bot = new TelegramBot(telegramToken, { webHook: { url, port } });
-    bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':' + port + '/bot' + telegramToken);
-  } else {
-    bot = new TelegramBot(telegramToken, { polling: true });
-  }
+const telegramToken = process.env.TELEGRAM_TOKEN || '1220613465:AAGplFC8Ug7kT_PVRMWjaF4T9A5rLFuTimU';
+if (process.env.NODE_ENV === 'production') {
+  const port = process.env.PORT || 443;
+  const url = process.env.CUSTOM_ENV_VARIABLE || '0.0.0.0';
+  bot = new TelegramBot(telegramToken, { webHook: { port, url } });
+  bot.setWebHook(process.env.CUSTOM_ENV_VARIABLE + ':' + port + '/bot' + telegramToken);
+} else {
+  bot = new TelegramBot(telegramToken, { polling: true });
+}
 
-  bot.on('polling_error', (err) =>
-    console.log(err)
-  );
+bot.on('polling_error', (err) =>
+  console.log(err)
+);  
 
-  bot.on('webhook_error', (error) => {
-    console.log(error.code);
-  });
+bot.on('webhook_error', (error) => {
+  console.log(error.code);
+});
 
-  bot.onText(/\/poll/, (message) => {
-    const chatId = message.chat.id;
-    const userId = message.from.id;
-    bot.sendMessage(userId, `Создание`);
-    requestQuizes(userId).then(uuids => {
-      bot.sendMessage(userId, `Создать опрос для:`, {
-        reply_markup: {
-          inline_keyboard: [
-            ...uuids.map(uuid => [{ text: cache[uuid], callback_data: chatId + '_select_' + uuid }]),
-          ]
-        }
-      });
+bot.onText(/\/poll/, (message) => {
+  const chatId = message.chat.id;
+  const userId = message.from.id;
+  bot.sendMessage(userId, `Создание`);
+  requestQuizes(userId).then(uuids => {
+    bot.sendMessage(userId, `Создать опрос для:`, {
+      reply_markup: {
+        inline_keyboard: [
+          ...uuids.map(uuid => [{ text: cache[uuid], callback_data: chatId + '_select_' + uuid }]),
+        ]
+      }
     });
   });
+});
 
-  bot.onText(/\/create/, (message) => {
-    const chatId = message.chat.id;
-    bot.sendPoll(chatId, message.text.replace('/create', '').trim(), [ 'Да, иду \u{1F4AF}%', 'Нет, не смогу \u{1F614}', 'Думаю \u{1F914} \u{23F3}', 'Играю за другую команду \u{1F6B6}', 'Со мной +1 \u{1F46F}' ], { is_anonymous: false });
-  });
+bot.onText(/\/create/, (message) => {
+  const chatId = message.chat.id;
+  bot.sendPoll(chatId, message.text.replace('/create', '').trim(), [ 'Да, иду \u{1F4AF}%', 'Нет, не смогу \u{1F614}', 'Думаю \u{1F914} \u{23F3}', 'Играю за другую команду \u{1F6B6}', 'Со мной +1 \u{1F46F}' ], { is_anonymous: false });
+});
 
-  bot.on('callback_query', (message) => {
-    if (message.data.includes('_select_')) {
-      const [ chatId, , uuid ] = message.data.split('_');
-      if (cache[uuid]) {
-        bot.sendPoll(chatId, cache[uuid], [ 'Да, иду \u{1F4AF}%', 'Нет, не смогу \u{1F614}', 'Думаю \u{1F914} \u{23F3}', 'Играю за другую команду \u{1F6B6}', 'Со мной +1 \u{1F46F}' ], { is_anonymous: false });
-      } else {
-        bot.sendMessage(chatId, `Игра не найдена, пожалуйста создайте опрос заново через /poll`);
-      }
+bot.on('callback_query', (message) => {
+  if (message.data.includes('_select_')) {
+    const [ chatId, , uuid ] = message.data.split('_');
+    if (cache[uuid]) {
+      bot.sendPoll(chatId, cache[uuid], [ 'Да, иду \u{1F4AF}%', 'Нет, не смогу \u{1F614}', 'Думаю \u{1F914} \u{23F3}', 'Играю за другую команду \u{1F6B6}', 'Со мной +1 \u{1F46F}' ], { is_anonymous: false });
+    } else {
+      bot.sendMessage(chatId, `Игра не найдена, пожалуйста создайте опрос заново через /poll`);
     }
-  });
-}
+  }
+});
 
 function requestQuizes(userId) {
   return new Promise((resolve, reject) => {
@@ -89,15 +84,4 @@ function requestQuizes(userId) {
       return uuid;
     })
   })
-}
-
-module.exports = async (req, res) => {
-  try {
-    await telegramBot();
-  }
-  catch (error) {
-    console.error('Error sending message');
-    console.log(error.toString());
-  }
-  response.send('OK');
 }
