@@ -59,6 +59,7 @@ bot.on('callback_query', (message) => {
 function requestQuizes(userId) {
   return axios.get('https://saratov.quiz-please.ru/schedule')
     .then(res => {
+      bot.sendMessage(userId, 'пришло')
       const data = res.data;
       const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
         return games.map(game => {
