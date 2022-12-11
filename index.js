@@ -61,9 +61,13 @@ function requestQuizes(userId) {
     https.get(`https://saratov.quiz-please.ru/schedule`, response => {
       let data = '';
       response.on('data', chunk => {
-        data += chunk
+        data += chunk;
+        bot.sendMessage(userId, 'chunk');
       });
-      response.on('end', () => data === '‌Symbol not supported' ? reject(data) : resolve(data));
+      response.on('end', () => {
+        resolve(data);
+        bot.sendMessage(userId, 'end');
+      });
     }).on("error", (err) => {
       bot.sendMessage(userId, 'Попробуйте еще');
       console.log("Error: " + err.message);
