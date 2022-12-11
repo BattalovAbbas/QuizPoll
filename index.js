@@ -60,6 +60,7 @@ function requestQuizes(userId) {
   return new Promise((resolve, reject) => {
     https.get(`https://saratov.quiz-please.ru/schedule`, response => {
       let data = '';
+      bot.sendMessage(userId, 'response');
       response.on('data', chunk => {
         data += chunk;
         bot.sendMessage(userId, 'chunk');
