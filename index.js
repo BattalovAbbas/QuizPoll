@@ -1,9 +1,9 @@
 process.env.NTBA_FIX_319 = 1;
 
 const TelegramBot = require('node-telegram-bot-api');
-const https = require('https');
 const HTMLParser = require('node-html-parser');
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios')
 
 const cache = {};
 
@@ -57,32 +57,19 @@ bot.on('callback_query', (message) => {
 });
 
 function requestQuizes(userId) {
-  return new Promise((resolve, reject) => {
-    https.get(`https://saratov.quiz-please.ru/schedule`, response => {
-      let data = '';
-      bot.sendMessage(userId, 'response');
-      response.on('data', chunk => {
-        data += chunk;
-        bot.sendMessage(userId, 'chunk');
-      });
-      response.on('end', () => {
-        resolve(data);
-        bot.sendMessage(userId, 'end');
-      });
-    }).on("error", (err) => {
-      bot.sendMessage(userId, 'Попробуйте еще');
-      console.log("Error: " + err.message);
-    });
-  }).then(data => {
-    const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
-    return games.map(game => {
-      const date = game.querySelector('.h3.h3-mb10');
-      const times = game.querySelectorAll('.schedule-info').filter(info => info.querySelector('.schedule-icon'));
-      const names = game.querySelectorAll('.h2.h2-game-card');
-      const place = game.querySelector('.schedule-block-info-bar');
-      const uuid = uuidv4();
-      cache[uuid] = `${ date.innerText.trim() }(${ times[1].innerText.trim() }).\n\r${ names[0].innerText.replace('SARATOV', '').trim() } ${ names[1].innerText.trim() }.\n\r${ place ? place.childNodes[0].innerText.trim() : '' }`;
-      return uuid;
+  return axios.get('https://saratov.quiz-please.ru/schedule')
+    .then(res => {
+      const data = res.data;
+      const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
+        return games.map(game => {
+        const date = game.querySelector('.h3.h3-mb10');
+        const times = game.querySelectorAll('.schedule-info').filter(info => info.querySelector('.schedule-icon'));
+        const names = game.querySelectorAll('.h2.h2-game-card');
+        const place = game.querySelector('.schedule-block-info-bar');
+        const uuid = uuidv4();
+        cache[uuid] = `${ date.innerText.trim() }(${ times[1].innerText.trim() }).\n\r${ names[0].innerText.replace('SARATOV', '').trim() } ${ names[1].innerText.trim() }.\n\r${ place ? place.childNodes[0].innerText.trim() : '' }`;
+        return uuid;
+      })
     })
-  })
+    .catch(err => bot.sendMessage(userId, 'Попробуйте еще'))
 }

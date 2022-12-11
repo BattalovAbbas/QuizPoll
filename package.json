@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/BattalovAbbas/QuizPoll#readme",
   "dependencies": {
+    "axios": "^1.2.1",
     "dotenv-webpack": "1.7.0",
     "node-html-parser": "^1.2.21",
     "node-telegram-bot-api": "0.50.0",
