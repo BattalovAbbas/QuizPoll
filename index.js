@@ -57,10 +57,9 @@ bot.on('callback_query', (message) => {
 });
 
 function requestQuizes(userId) {
-  bot.sendMessage(userId, 'запрос')
-  return axios.get('https://saratov.quiz-please.ru/schedule')
+  try {
+    return axios.get('https://saratov.quiz-please.ru/schedule')
     .then(res => {
-      bot.sendMessage(userId, 'пришло')
       const data = res.data;
       const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
       return games.map(game => {
@@ -74,4 +73,7 @@ function requestQuizes(userId) {
       })
     })
     .catch(err => bot.sendMessage(userId, 'Попробуйте еще'))
+  } catch(e) {
+    console.log('Ошибка', e);
+  }
 }
