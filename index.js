@@ -58,9 +58,17 @@ bot.on('callback_query', (message) => {
 
 function requestQuizes(userId) {
   try {
-    return axios.get('https://saratov.quiz-please.ru/schedule')
-    .then(res => {
-      const data = res.data;
+    return new Promise((resolve, reject) => {
+      https.get(`https://saratov.quiz-please.ru/schedule`, response => {
+        let data = '';
+        response.on('data', chunk => {
+          data += chunk
+        });
+        response.on('end', () => data === '‌Symbol not supported' ? reject(data) : resolve(data));
+      }).on("error", (err) => {
+        console.log("Error: " + err.message);
+      });
+    }).then(data => {
       const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
       return games.map(game => {
         const date = game.querySelector('.h3.h3-mb10');
