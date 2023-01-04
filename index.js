@@ -66,7 +66,7 @@ function requestQuizes(userId) {
         });
         response.on('end', () => data === '‌Symbol not supported' ? reject(data) : resolve(data));
       }).on("error", (err) => {
-        console.log("Error: " + err.message);
+        console.error("Error: " + err.message);
       });
     }).then(data => {
       const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
@@ -80,8 +80,11 @@ function requestQuizes(userId) {
         return uuid;
       })
     })
-    .catch(err => bot.sendMessage(userId, 'Попробуйте еще'))
+    .catch(err => {
+      console.error('Ошибка', err);
+      bot.sendMessage(userId, 'Попробуйте еще');
+    })
   } catch(e) {
-    console.log('Ошибка', e);
+    console.error('Ошибка', e);
   }
 }
