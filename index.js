@@ -60,7 +60,7 @@ bot.on('callback_query', (message) => {
 function requestQuizes(userId) {
   try {
     return new Promise((resolve, reject) => {
-      https.get(`https://saratov.quiz-please.ru/schedule`, response => {
+      https.get(`https://saratov.quizplease.ru/schedule`, response => {
         let data = '';
         response.on('data', chunk => {
           data += chunk
