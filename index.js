@@ -58,42 +58,43 @@ bot.on('callback_query', (message) => {
 });
 
 function requestQuizes(userId) {
+  const apiUrl = 'https://api.quizplease.ru/api/games/schedule/57?per_page=30&order=date&meta%5B%5D=places_ids&meta%5B%5D=dates&statuses%5B%5D=0&statuses%5B%5D=1&statuses%5B%5D=2&statuses%5B%5D=3&statuses%5B%5D=5';
+
+  const formatDate = (isoDate) => {
+    if (!isoDate) return { dateText: '', timeText: '' };
+    const [datePart, timePart] = isoDate.split(' ');
+    if (!datePart) return { dateText: '', timeText: timePart || '' };
+
+    const [day, month, year] = datePart.split('.');
+    const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const monthName = months[Number(month) - 1] || '';
+    return {
+      dateText: monthName ? `${Number(day)} ${monthName} ${year}` : datePart,
+      timeText: timePart || ''
+    };
+  };
+
   try {
-    return new Promise((resolve, reject) => {
-      https.get(`https://saratov.quizplease.ru/schedule`, response => {
-        let data = '';
-        response.on('data', chunk => {
-          data += chunk
+    return axios.get(apiUrl)
+      .then(response => {
+        const gamesArray = response?.data?.data?.data || [];
+        return gamesArray.map(game => {
+          const { date = '', title = '', place = {} } = game;
+          const { dateText, timeText } = formatDate(date);
+          const placeText = place.title ? `${place.title}${place.address ? `, ${place.address}` : ''}` : `${place.address || ''}`;
+
+          const uuid = uuidv4();
+          cache[uuid] = `${dateText} (${timeText}).\n\r${title}.\n\r${placeText}`;
+          return uuid;
         });
-        response.on('end', () => data === '‌Symbol not supported' ? reject(data) : resolve(data));
-      }).on("error", (err) => {
-        console.error("Error: " + err.message);
-      });
-    }).then(data => {
-      const games = HTMLParser.parse(data).querySelectorAll('.game-card');
-      return games.map(game => {
-        const dateEl = game.querySelector('.game-card__date') || game.querySelector('.h3.h3-mb10');
-        const nameEls = game.querySelectorAll('.game-card__name-wrapper .game-card__name');
-        const timeEl = game.querySelector('.game-card__location-wrapper:nth-of-type(2) .game-card__location-text') || game.querySelector('.schedule-info .schedule-icon');
-        const locationTitleEl = game.querySelector('.game-card__location-text__title') || game.querySelector('.schedule-block-info-bar');
-        const locationSubtitleEl = game.querySelector('.game-card__location-text__subtitle');
-
-        const dateText = dateEl ? dateEl.innerText.trim() : '';
-        const timeText = timeEl ? timeEl.innerText.trim() : '';
-        const placeText = locationTitleEl ? locationTitleEl.innerText.trim() : (locationSubtitleEl ? locationSubtitleEl.innerText.trim() : '');
-        const gameName = nameEls[0] ? nameEls[0].innerText.replace('SARATOV', '').trim() : '';
-        const gameRound = nameEls[1] ? nameEls[1].innerText.trim() : '';
-
-        const uuid = uuidv4();
-        cache[uuid] = `${dateText} (${timeText}).\n\r${gameName} ${gameRound}.\n\r${placeText}`;
-        return uuid;
       })
-    })
-    .catch(err => {
-      console.error('Ошибка', err);
-      bot.sendMessage(userId, 'Попробуйте еще');
-    })
-  } catch(e) {
-    console.error('Ошибка', e);
+      .catch(err => {
+        console.error('Ошибка requestQuizes API', err);
+        bot.sendMessage(userId, 'Попробуйте еще');
+        return [];
+      });
+  } catch (e) {
+    console.error('Ошибка requestQuizes', e);
+    return Promise.resolve([]);
   }
 }
