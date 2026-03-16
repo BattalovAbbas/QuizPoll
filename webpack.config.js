@@ -11,6 +11,13 @@ module.exports = {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
   },
+  externals: {
+    'axios': 'axios',
+    'node-telegram-bot-api': 'node-telegram-bot-api',
+    'node-html-parser': 'node-html-parser',
+    'uuid': 'uuid',
+    'https': 'https',
+  },
   plugins: [
     new webpack.IgnorePlugin(/^pg-native$/),
     new Dotenv()
