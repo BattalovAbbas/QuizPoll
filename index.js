@@ -77,7 +77,7 @@ function requestQuizes(userId) {
   try {
     return axios.get(apiUrl)
       .then(response => {
-        const gamesArray = response?.data?.data?.data || [];
+        const gamesArray = (response && response.data && response.data.data && response.data.data.data) || [];
         return gamesArray.map(game => {
           const { date = '', title = '', place = {} } = game;
           const { dateText, timeText } = formatDate(date);
