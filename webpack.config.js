@@ -12,11 +12,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
   externals: {
-    'axios': 'axios',
-    'node-telegram-bot-api': 'node-telegram-bot-api',
-    'node-html-parser': 'node-html-parser',
-    'uuid': 'uuid',
-    'https': 'https',
+    'node-telegram-bot-api': 'commonjs node-telegram-bot-api',
+    'node-html-parser': 'commonjs node-html-parser',
+    'uuid': 'commonjs uuid',
+    'axios': 'commonjs axios',
+    'https': 'commonjs https'
   },
   plugins: [
     new webpack.IgnorePlugin(/^pg-native$/),
