@@ -70,14 +70,22 @@ function requestQuizes(userId) {
         console.error("Error: " + err.message);
       });
     }).then(data => {
-      const games = HTMLParser.parse(data).querySelectorAll('.schedule-column');
+      const games = HTMLParser.parse(data).querySelectorAll('.game-card');
       return games.map(game => {
-        const date = game.querySelector('.h3.h3-mb10');
-        const times = game.querySelectorAll('.schedule-info').filter(info => info.querySelector('.schedule-icon'));
-        const names = game.querySelectorAll('.h2.h2-game-card');
-        const place = game.querySelector('.schedule-block-info-bar');
+        const dateEl = game.querySelector('.game-card__date') || game.querySelector('.h3.h3-mb10');
+        const nameEls = game.querySelectorAll('.game-card__name-wrapper .game-card__name');
+        const timeEl = game.querySelector('.game-card__location-wrapper:nth-of-type(2) .game-card__location-text') || game.querySelector('.schedule-info .schedule-icon');
+        const locationTitleEl = game.querySelector('.game-card__location-text__title') || game.querySelector('.schedule-block-info-bar');
+        const locationSubtitleEl = game.querySelector('.game-card__location-text__subtitle');
+
+        const dateText = dateEl ? dateEl.innerText.trim() : '';
+        const timeText = timeEl ? timeEl.innerText.trim() : '';
+        const placeText = locationTitleEl ? locationTitleEl.innerText.trim() : (locationSubtitleEl ? locationSubtitleEl.innerText.trim() : '');
+        const gameName = nameEls[0] ? nameEls[0].innerText.replace('SARATOV', '').trim() : '';
+        const gameRound = nameEls[1] ? nameEls[1].innerText.trim() : '';
+
         const uuid = uuidv4();
-        cache[uuid] = `${ date.innerText.trim() }(${ times[1].innerText.trim() }).\n\r${ names[0].innerText.replace('SARATOV', '').trim() } ${ names[1].innerText.trim() }.\n\r${ place ? place.childNodes[0].innerText.trim() : '' }`;
+        cache[uuid] = `${dateText} (${timeText}).\n\r${gameName} ${gameRound}.\n\r${placeText}`;
         return uuid;
       })
     })
